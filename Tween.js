@@ -23,19 +23,30 @@
 // Class Tween.
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 var Tween = function( element, property, easing, from, to, duration ) {
+	// Keep a handle to the given element.
+	this.p_element = element;
+	
+	// Convert the given element to a jquery element.
+	element = $(element);
+	
+	var cssData = Object.create(null);
+	var _this   = this;
+		
+	// If the "from" value is defined, make sure to set the from value to the given property before setting
+	// up the transition styles. 
+	if (from !== undefined && property !== undefined) {
+		cssData[property] = from;
+		
+		element.css(cssData);
+	}
+	
+	// Clear the css data object.
+	cssData = Object.create(null);
+	
+	// Set the "to" value for the given property in order to play the transition.
+	cssData[property] = to;
+	
 	if (this.checkSupport()) {
-		var cssData = Object.create(null);
-		
-		// If the "from" value is defined, make sure to set the from value to the given property before setting
-		// up the transition styles. 
-		if (from !== undefined && property !== undefined) {
-			cssData[property] = from;
-			
-			element.css(cssData);
-		}
-		
-		cssData = Object.create(null);
-		
 		// Setup the css data object with the duration, property, and easing values, then set these as the css
 		// data for the given element. 
 		if (duration !== undefined && !isNaN(duration)) {
@@ -45,7 +56,7 @@ var Tween = function( element, property, easing, from, to, duration ) {
 			cssData.mozTransitionDuration    = (duration / 1000) + 's';
 			cssData.webkitTransitionDuration = (duration / 1000) + 's';
 		} else {
-			throw new Error('Tween: cannot tween element without a defined duration.');
+			console.warn('Tween: cannot tween element without a defined duration.');
 		}
 		
 		if (property !== undefined) {
@@ -55,7 +66,7 @@ var Tween = function( element, property, easing, from, to, duration ) {
 			cssData.mozTransitionProperty    = property;
 			cssData.webkitTransitionProperty = property;
 		} else {
-			throw new Error('Tween: cannot tween element without a defined property.');
+			console.warn('Tween: cannot tween element without a defined property.');
 		}
 		
 		if (easing === undefined) {
@@ -72,20 +83,35 @@ var Tween = function( element, property, easing, from, to, duration ) {
 		
 		cssData = Object.create(null);
 		
-		// Set the "to" value for the given property in order to play the transition.
-		cssData[property] = to;
-		
-		element.on('webkitTransitionEnd otransitionend oTransitionEnd msTransitionEnd transitionend', this.transitionComplete);
+		// Watch for the css3 transition to complete, and set the css data for the element to begin the transition.
+		element.on('webkitTransitionEnd otransitionend oTransitionEnd msTransitionEnd transitionend', function() {
+			_this.transitionComplete();
+		});
 		element.css(cssData);
 	} else if ($ !== undefined) {
-		
+		// Use the jQuery animate method to tween the element.
+		element.animate(cssData, duration, easing, function() {
+			_this.transitionComplete();
+		});
 	} else {
-		throw new Error('Tween: CSS3 transitions not supported, and jQuery is not included.');
+		console.warn('Tween: CSS3 transitions not supported, and jQuery is not included.');
 	}
 };
 
+Tween.TWEEN_COMPLETE = 'TWEENCOMPLETE';
+Tween.DISPATCH_ERROR = 'Not able to dispatch event, please make sure you are including jQuery in your project: %function%';
+
 Tween.prototype.transitionComplete = function() {
-	alert('transition complete');
+	// Try to dispatch the jquery event, or warn the user if it doesn't work.
+	try {
+		$(this).trigger({
+			'type': Tween.TWEEN_COMPLETE,
+			'tween': this,
+			'element': this.p_element
+		});
+	} catch( error ) {
+		console.warn(Tween.DISPATCH_ERROR.replace(/%function%/g, 'Tween.transitionComplete();'));
+	}
 };
 
 Tween.prototype.checkSupport = function() {

@@ -17,5 +17,21 @@
 </head>
 <body>
 	<div id="tween"></div>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+	<script src="./Tween.js"></script>
+	<script>
+		$(document).ready(function() {
+			// Get a handle to the tween element, and create a tween to animate it.
+			var element = document.getElementById('tween');
+			var tween   = new Tween(element, 'left', undefined, '10px', '200px', 1000);
+			
+			// Watch for the tween to complete.
+			$(tween).on(Tween.TWEEN_COMPLETE, tweenComplete);
+		});
+		
+		function tweenComplete( data ) {
+			
+		}
+	</script>
 </body>
 </html>
