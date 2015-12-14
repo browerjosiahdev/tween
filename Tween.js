@@ -38,7 +38,9 @@ var Tween = function( element, property, easing, from, to, duration ) {
 	this.isPlaying = false;
 
 	// Convert the given element to a jquery element.
-	element = $(element);
+	if (element.jquery === undefined) {
+		element = $(element);
+	}
 
 	var cssData = Object.create(null);
 
@@ -148,7 +150,7 @@ Tween.prototype.transitionComplete = function() {
 			'element': this.p_element
 		});
 	} catch( error ) {
-		console.warn(Tween.DISPATCH_ERROR.replace(/%function%/g, 'Tween.transitionComplete();'));
+		console.warn(Tween.DISPATCH_ERROR.replace(/%function%/g, 'Tween.transitionComplete():') + error.message);
 	}
 };
 
