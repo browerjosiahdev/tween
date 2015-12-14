@@ -117,6 +117,25 @@ var Tween = function( element, property, easing, from, to, duration ) {
 Tween.TWEEN_COMPLETE = 'TWEENCOMPLETE';
 Tween.DISPATCH_ERROR = 'Not able to dispatch event, please make sure you are including jQuery in your project: %function%';
 
+Tween.prototype.stop = function() {
+	if (this.checkSupport()) {
+		// If using css3 transitions, set the transition property to none
+		// to stop the animation.
+		var cssData = Object.create(null);
+
+		cssData.transition       = 'none';
+		cssData.oTransition      = 'none';
+		cssData.msTransition     = 'none';
+		cssData.mozTransition    = 'none';
+		cssData.webkitTransition = 'none';
+
+		this.p_element.css(cssData);
+	} else {
+		// If using jquery, call the "stop" method to stop the animation.
+		this.p_element.stop();
+	}
+};
+
 Tween.prototype.transitionComplete = function() {
 	// Flag the tween as not playing.
 	this.isPlaying = false;
